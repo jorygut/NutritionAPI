@@ -165,8 +165,10 @@ def search_history(query, length):
             date = res[16]
             description = res[17]
             serving_multiplier = res[18]
-            serving_size = f'{float(selected_servings.split(' ')[0]) / float(serving_multiplier)} {selected_servings.split(' ')[1]}'
+            servings_value, serving_unit = selected_servings.split(' ')
 
+            # Calculate the new serving size
+            serving_size = f'{float(servings_value) / float(serving_multiplier):.2f} {serving_unit}'
             if description not in seen_descriptions:
                 seen_descriptions.add(description)
                 avoiding, including = reuseable_ingredient_check(username, ingredients)
@@ -326,16 +328,11 @@ def retrieve_recent_logs():
                 date = res[16]
                 description = res[17]
                 serving_multiplier = res[18]
-                serving_multiplier = 2  # Replace with your actual multiplier
-
-                # Split the selected_servings string
-                servings_value, serving_unit = selected_servings.split(' ')
-
-                # Calculate the new serving size
+                
                 if selected_servings == 'null':
                     serving_size = 1
                 elif len(selected_servings.split(' ')) > 1:
-                    serving_size = f'{float(servings_value) / float(serving_multiplier):.2f} {serving_unit}'
+                    serving_size = f'{float(selected_servings.split(' ')[0]) / float(serving_multiplier)} {selected_servings.split(' ')[1]}'
                 else:
                     serving_size = float(selected_servings.split(' ')[0]) / float(serving_multiplier)
 
