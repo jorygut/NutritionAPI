@@ -330,11 +330,15 @@ def retrieve_recent_logs():
                 serving_multiplier = res[18]
                 
                 if selected_servings == 'null':
-                    serving_size = 1
+                    serving_size = 1  # Default serving size when selected_servings is 'null'
                 elif len(selected_servings.split(' ')) > 1:
-                    serving_size = f'{float(selected_servings.split(' ')[0]) / float(serving_multiplier)} {selected_servings.split(' ')[1]}'
+                    # More than one part means it contains a unit (e.g., "28 g")
+                    parts = selected_servings.split(' ')
+                    value = float(parts[0]) / float(serving_multiplier)
+                    serving_size = f'{value} {parts[1]}'
                 else:
-                    serving_size = float(selected_servings.split(' ')[0]) / float(serving_multiplier)
+                    # Only one part, meaning it is just a number (e.g., "28")
+                    serving_size = float(selected_servings) / float(serving_multiplier)
 
                 if description not in seen_descriptions:
                     seen_descriptions.add(description)
