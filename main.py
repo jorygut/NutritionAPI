@@ -17,13 +17,13 @@ import random
 app = Flask(__name__)
 CORS(app)
 # Declare Engine
-DATABASE_URI = 'postgresql://postgres@localhost:5432/yourdatabase'
+DATABASE_URI = 'postgresql://postgres:JIGpw69%@localhost:5433/yourdatabase'
 engine = create_engine(DATABASE_URI)
 #Declare Nutrition Engine
-NUTRITION_DATABASE_URI = 'postgresql://postgres@localhost:5432/nutritiondb'
+NUTRITION_DATABASE_URI = 'postgresql://postgres:JIGpw69%@localhost:5433/nutritiondb'
 nutrition_engine = create_engine(NUTRITION_DATABASE_URI)
 #Declare User Engine
-USER_DATABASE_URI = 'postgresql://postgres@localhost:5432/userdb'
+USER_DATABASE_URI = 'postgresql://postgres:JIGpw69%@localhost:5433/userdb'
 user_engine = create_engine(USER_DATABASE_URI)
 Session = sessionmaker(bind=user_engine)
 session = Session()
