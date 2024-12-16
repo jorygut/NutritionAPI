@@ -28,7 +28,7 @@ user_engine = create_engine(USER_DATABASE_URI)
 Session = sessionmaker(bind=user_engine)
 session = Session()
 
-@app.route('/api/food', methods=['GET'])
+@app.route('/food', methods=['GET'])
 def get_food_data():
     query = request.args.get('query')
     search_length = request.args.get('searchLength')
@@ -114,7 +114,7 @@ def search(query, length, username):
                 })
     return results
 
-@app.route('/api/foodHistory', methods=['GET'])
+@app.route('/foodHistory', methods=['GET'])
 def get_food_data_history():
     query = request.args.get('query')
     length = request.args.get('searchLength')
@@ -196,7 +196,7 @@ def search_history(query, length):
                                 'including': including
                                 })
     return results
-@app.route('/api/foodCustom', methods=['GET'])
+@app.route('/foodCustom', methods=['GET'])
 def get_food_data_custom():
     query = request.args.get('query')
     length = request.args.get('searchLength')
@@ -279,7 +279,7 @@ def search_custom(query, length, username):
     print(f'Results: {results}')
     return results
 
-@app.route('/api/retreiveRecentHistory', methods=['GET'])
+@app.route('/retreiveRecentHistory', methods=['GET'])
 def retrieve_recent_logs():
     auth = request.headers.get('Authorization')
     if auth:
@@ -369,7 +369,7 @@ def retrieve_recent_logs():
 
         return jsonify(results)
     return jsonify({"error": "Unauthorized"}), 401
-@app.route('/api/retrieveCustom', methods=['GET'])
+@app.route('/retrieveCustom', methods=['GET'])
 def retrieve_custom():
     auth = request.headers.get('Authorization')
     if auth:
@@ -431,7 +431,7 @@ def retrieve_custom():
 
     return final_results
 
-@app.route('/api/profile', methods=['POST'])
+@app.route('/profile', methods=['POST'])
 def create_profile():
     data = request.json
     username = data.get('username')
@@ -462,7 +462,7 @@ def create_profile():
         connection.rollback()
         return jsonify({'error': str(e)}), 500
     
-@app.route('/api/login', methods=['POST'])
+@app.route('/login', methods=['POST'])
 def login():
     data = request.json
     username = data.get('username')
@@ -501,7 +501,7 @@ def get_user_from_token(token):
         user = result.fetchone()
     return user
 
-@app.route('/api/log', methods=['POST'])
+@app.route('/log', methods=['POST'])
 def log_food():
     data = request.json
     current_date = datetime.now().strftime('%Y-%m-%d')
@@ -563,7 +563,7 @@ def log_food():
     else:
         return jsonify({'error': 'Missing authorization token'}), 401
 
-@app.route('/api/meals', methods=['GET', 'POST'])
+@app.route('/meals', methods=['GET', 'POST'])
 def retrieve_meals():
     print('retreiving meals')
     date = request.args.get('activateDate')
@@ -613,7 +613,7 @@ def retrieve_meals():
 
     return jsonify(meals_list)
 
-@app.route('/api/remove', methods=['POST'])
+@app.route('/remove', methods=['POST'])
 def remove_food():
     data = request.get_json()
     food = data.get('food')
@@ -639,7 +639,7 @@ def remove_food():
     finally:
         session.close()
 
-@app.route('/api/removemeal', methods=['POST'])
+@app.route('/removemeal', methods=['POST'])
 def remove_meal():
     data = request.get_json()
     cur_date = data.get('date')
@@ -668,7 +668,7 @@ def remove_meal():
             session.rollback()
 
     return 'balls'
-@app.route('/api/update_meals', methods=['POST'])
+@app.route('/update_meals', methods=['POST'])
 def update_meals():
     data = request.get_json()
     cur_date = data.get('date')
@@ -708,7 +708,7 @@ def update_meals():
     
     return jsonify({'message': 'Meals updated successfully'}), 200
 
-@app.route('/api/setNutrientGoals', methods=['POST'])
+@app.route('/setNutrientGoals', methods=['POST'])
 def set_goals():
     data = request.get_json()
     calories = data.get('calories')
@@ -751,7 +751,7 @@ def set_goals():
     print('Update Successful')
     return "balls"
 
-@app.route('/api/fetchNutrientGoals', methods=['GET'])
+@app.route('/fetchNutrientGoals', methods=['GET'])
 def send_nutrient_goals():
     token = request.headers.get('Authorization')
     if token:
@@ -785,7 +785,7 @@ def send_nutrient_goals():
                 return jsonify({'error': 'No goals found for the provided token'}), 404
     else:
         return jsonify({'error': 'Token is missing'}), 403
-@app.route('/api/removeIngredient', methods=['POST'])
+@app.route('/removeIngredient', methods=['POST'])
 def remove_ingredient():
     data = request.json
     token = data.get('token')
@@ -811,7 +811,7 @@ def remove_ingredient():
 
     return "Success"
     
-@app.route('/api/logWeight', methods=['POST', 'GET'])
+@app.route('/logWeight', methods=['POST', 'GET'])
 def log_weight():
     token = request.headers.get('Authorization')
     data = request.get_json()
@@ -833,7 +833,7 @@ def log_weight():
     except Exception as e:
         print('failed to log weight:', e)
         return jsonify({'error': 'Failed to log weight'}), 500
-@app.route('/api/retreiveWeight', methods=['GET'])
+@app.route('/retreiveWeight', methods=['GET'])
 def retreive_weight_data(): 
     try:
         token = request.headers.get('Authorization')
@@ -897,7 +897,7 @@ def retreive_weight_data():
     except Exception as e:
         print(f"An error occurred: {e}")
         return {"error": "An internal server error occurred"}, 500
-@app.route('/api/removeWeight', methods=['POST'])
+@app.route('/removeWeight', methods=['POST'])
 def remove_weight():
     token = request.headers.get('Authorization')
     data = request.json.get('logs')
@@ -932,7 +932,7 @@ def remove_weight():
             
     return "Success"
 
-@app.route('/api/calculateWeightChange')
+@app.route('/calculateWeightChange')
 def calculate_weight_change():
     try:
         token = request.headers.get('Authorization')
@@ -993,7 +993,7 @@ def calculate_weight_change():
         return {"error": "Failed to calculate weight change"}, 500
 
     
-@app.route('/api/updateHistory')
+@app.route('/updateHistory')
 def update_user_data():
     authorization_header = request.headers.get('Authorization')
     
@@ -1082,7 +1082,7 @@ def update_user_data():
 
     return jsonify(response_data)
 
-@app.route('/api/checkIngredients', methods=['POST'])
+@app.route('/checkIngredients', methods=['POST'])
 def check_ingredients():
     authorization_header = request.headers.get('Authorization')
     if authorization_header:
@@ -1177,7 +1177,7 @@ def calculate_maintenance_calories(weights, calorie_intakes):
     return maintenance_calories, average_daily_intake, (caloric_surplus_deficit / 7)
 
 
-@app.route('/api/bodyMeasurements', methods=['GET'])
+@app.route('/bodyMeasurements', methods=['GET'])
 def retrieve_measurements():
     auth = request.headers.get('Authorization')
     if auth:
@@ -1213,7 +1213,7 @@ def retrieve_measurements():
         maintenance_calories = calculate_maintenance_calories(weight_dict, food_dict)
     return jsonify(maintenance_calories)
 
-@app.route('/api/calc', methods=['GET'])
+@app.route('/calc', methods=['GET'])
 def calculate_cals():
     auth = request.headers.get('Authorization')
     if auth:
@@ -1234,7 +1234,7 @@ def calculate_cals():
     for i in weight_result:
         print(i)
     return 'balls'
-@app.route('/api/getCurrentWeight', methods=['GET'])
+@app.route('/getCurrentWeight', methods=['GET'])
 def calc_current_weight():
     auth = request.headers.get('Authorization')
     if auth:
@@ -1274,7 +1274,7 @@ def calc_current_weight():
                 weight_count_prev += 1
             avg_weight_prev = total_weight_prev / weight_count_prev
     return jsonify(avg_weight, avg_weight_prev)
-@app.route('/api/getStats', methods=['GET'])
+@app.route('/getStats', methods=['GET'])
 def retrieve_user_stats():
     auth = request.headers.get('Authorization')
     if auth:
@@ -1335,7 +1335,7 @@ def calculate_calories(bmr, activity_level):
     }
     return bmr * activity_multipliers.get(activity_level, 1.2)
 
-@app.route('/api/calculateCalorieNeeds', methods=["POST"])
+@app.route('/calculateCalorieNeeds', methods=["POST"])
 def calculate_calorie_needs():
     auth = request.headers.get('Authorization')
     if auth:
@@ -1362,7 +1362,7 @@ def calculate_calorie_needs():
     
     return jsonify(maintenance_calories)
 
-@app.route('/api/saveCalculatedMacros', methods=['POST'])
+@app.route('/saveCalculatedMacros', methods=['POST'])
 def save_calculated_macros():
     auth = request.headers.get('Authorization')
     if auth:
@@ -1400,7 +1400,7 @@ def save_calculated_macros():
     print(data)
     return "Success"
 
-@app.route('/api/createFood', methods=["POST"])
+@app.route('/createFood', methods=["POST"])
 def create_food():
     auth = request.headers.get('Authorization')
     if auth:
@@ -1467,7 +1467,7 @@ def create_food():
 
     return 'Food created successfully'
 
-@app.route('/api/saveCoachSettings', methods=['POST'])
+@app.route('/saveCoachSettings', methods=['POST'])
 def save_coach_settings():
     data = request.get_json()
     print(data)
@@ -1514,7 +1514,7 @@ def save_coach_settings():
     
     return "success"
 
-@app.route('/api/nutritionTrendsCoach', methods=['GET'])
+@app.route('/nutritionTrendsCoach', methods=['GET'])
 def send_trend_messages():
     auth = request.headers.get('Authorization')
     cals = request.args.get('cals')
@@ -1964,7 +1964,7 @@ def send_trend_messages():
 def check_macros_calories(meal_data):
     return 'c'
 
-@app.route('/api/getGoals', methods=['GET'])
+@app.route('/getGoals', methods=['GET'])
 def get_goals():
     auth = request.headers.get('Authorization')
     if auth:
@@ -1972,7 +1972,7 @@ def get_goals():
         user_data = get_user_from_token(token)
         return jsonify(dict(user_data._mapping))
 
-@app.route('/api/manageLabel', methods=['GET', 'POST'])
+@app.route('/manageLabel', methods=['GET', 'POST'])
 def upload_image():
     sample_image = 'IMG_6748.HEIC'
     img = Image.open(sample_image)
