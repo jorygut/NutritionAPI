@@ -1972,6 +1972,8 @@ def get_goals():
         user_data = get_user_from_token(token)
         return jsonify(dict(user_data._mapping))
 
+pytesseract.pytesseract.tesseract_cmd = '/usr/bin/tesseract' # Linux example, adjust if needed
+
 @app.route('/manageLabel', methods=['GET', 'POST'])
 def upload_image():
     if request.method == 'POST':
@@ -1979,20 +1981,30 @@ def upload_image():
         if not image_file:
             return jsonify({'error': 'No image file provided.'}), 400
 
-        img = Image.open(image_file)
+        try:
+            # Read the image file
+            img = Image.open(image_file)
 
-        detected_text = pytesseract.image_to_string(img)
+            # Use OCR to extract text
+            detected_text = pytesseract.image_to_string(img)
 
-        nutritional_info = parse_nutritional_values(detected_text)
-        ingredients = parse_ingredients(detected_text)
+            # Parse nutritional values and ingredients from the text
+            nutritional_info = parse_nutritional_values(detected_text)
+            ingredients = parse_ingredients(detected_text)
 
-        print('Ingredients:', ingredients)
-        print('Nutritional Info:', nutritional_info)
+            # Print or return the extracted information
+            print('Ingredients:', ingredients)
+            print('Nutritional Info:', nutritional_info)
+            
+            return jsonify({
+                'ingredients': ingredients,
+                'nutritional_info': nutritional_info
+            }), 200
         
-        return jsonify({
-            'ingredients': ingredients,
-            'nutritional_info': nutritional_info
-        }), 200
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+
+    return jsonify({'error': 'Invalid request method.'}), 400
 def parse_nutritional_values(text):
     patterns = {
         "serving_size": r"serving size.*?(\d+.*?[gml])",
