@@ -1978,6 +1978,7 @@ pytesseract.pytesseract.tesseract_cmd = '/usr/bin/tesseract' # Linux example, ad
 def upload_image():
     if request.method == 'POST':
         image_file = request.files.get('image')
+        print(image_file)
         if not image_file:
             return jsonify({'error': 'No image file provided.'}), 400
 
