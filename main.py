@@ -1974,16 +1974,25 @@ def get_goals():
 
 @app.route('/manageLabel', methods=['GET', 'POST'])
 def upload_image():
-    sample_image = 'IMG_6748.HEIC'
-    img = Image.open(sample_image)
+    if request.method == 'POST':
+        image_file = request.files.get('image')
+        if not image_file:
+            return jsonify({'error': 'No image file provided.'}), 400
 
-    detected_text = pytesseract.image_to_string(img)
+        img = Image.open(image_file)
 
-    nutritional_info = parse_nutritional_values(detected_text)
-    ingredients = parse_ingredients(detected_text)
-    print(ingredients)
-    print(nutritional_info)
-    return 'balls'
+        detected_text = pytesseract.image_to_string(img)
+
+        nutritional_info = parse_nutritional_values(detected_text)
+        ingredients = parse_ingredients(detected_text)
+
+        print('Ingredients:', ingredients)
+        print('Nutritional Info:', nutritional_info)
+        
+        return jsonify({
+            'ingredients': ingredients,
+            'nutritional_info': nutritional_info
+        }), 200
 def parse_nutritional_values(text):
     patterns = {
         "serving_size": r"serving size.*?(\d+.*?[gml])",
