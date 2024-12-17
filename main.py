@@ -1980,30 +1980,29 @@ def upload_image():
         if not image_file:
             return jsonify({'error': 'No image file provided.'}), 400
 
-        try:
-            # Read the image file
-            img = Image.open(image_file)
-            print(img)
 
-            # Use OCR to extract text
-            detected_text = pytesseract.image_to_string(img)
-            print(detected_text)
+        # Read the image file
+        img = Image.open(image_file)
+        print(img)
 
-            # Parse nutritional values and ingredients from the text
-            nutritional_info = parse_nutritional_values(detected_text)
-            ingredients = parse_ingredients(detected_text)
+        # Use OCR to extract text
+        detected_text = pytesseract.image_to_string(img)
+        print(detected_text)
 
-            # Print or return the extracted information
-            print('Ingredients:', ingredients)
-            print('Nutritional Info:', nutritional_info)
-            
-            return jsonify({
-                'ingredients': ingredients,
-                'nutritional_info': nutritional_info
-            }), 200
+        # Parse nutritional values and ingredients from the text
+        nutritional_info = parse_nutritional_values(detected_text)
+        ingredients = parse_ingredients(detected_text)
+
+        # Print or return the extracted information
+        print('Ingredients:', ingredients)
+        print('Nutritional Info:', nutritional_info)
         
-        except Exception as e:
-            return jsonify({'error': str(e)}), 500
+        return jsonify({
+            'ingredients': ingredients,
+            'nutritional_info': nutritional_info
+        }), 200
+        
+
 
     return jsonify({'error': 'Invalid request method.'}), 400
 def parse_nutritional_values(text):
