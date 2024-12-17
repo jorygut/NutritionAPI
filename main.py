@@ -23,7 +23,7 @@ engine = create_engine(DATABASE_URI)
 NUTRITION_DATABASE_URI = 'postgresql://nutritiondb_owner:sG6LUrf4Haio@ep-aged-dust-a5ajc6ow.us-east-2.aws.neon.tech/nutritiondb?sslmode=require'
 nutrition_engine = create_engine(NUTRITION_DATABASE_URI)
 #Declare User Engine
-USER_DATABASE_URI = 'postgresql://postgres:JIGpw69%@localhost:5433/userdb'
+USER_DATABASE_URI = 'postgresql://neondb_owner:36tvODwzHdoQ@ep-solitary-thunder-a5xw9rsz.us-east-2.aws.neon.tech/neondb?sslmode=require'
 user_engine = create_engine(USER_DATABASE_URI)
 Session = sessionmaker(bind=user_engine)
 session = Session()
