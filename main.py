@@ -2001,10 +2001,7 @@ def upload_image():
             'ingredients': ingredients,
             'nutritional_info': nutritional_info
         })
-        
-
-
-    return jsonify({'error': 'Invalid request method.'}), 400
+    
 def parse_nutritional_values(text):
     patterns = {
         "serving_size": r"serving size.*?(\d+.*?[gml])",
