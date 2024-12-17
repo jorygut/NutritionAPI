@@ -20,7 +20,7 @@ CORS(app)
 DATABASE_URI = 'postgresql://postgres:JIGpw69%@localhost:5433/yourdatabase'
 engine = create_engine(DATABASE_URI)
 #Declare Nutrition Engine
-NUTRITION_DATABASE_URI = 'postgresql://postgres:JIGpw69%@localhost:5433/nutritiondb'
+NUTRITION_DATABASE_URI = 'postgresql://nutritiondb_owner:sG6LUrf4Haio@ep-aged-dust-a5ajc6ow.us-east-2.aws.neon.tech/nutritiondb?sslmode=require'
 nutrition_engine = create_engine(NUTRITION_DATABASE_URI)
 #Declare User Engine
 USER_DATABASE_URI = 'postgresql://postgres:JIGpw69%@localhost:5433/userdb'
