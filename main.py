@@ -1974,6 +1974,7 @@ def get_goals():
 
 @app.route('/manageLabel', methods=['GET', 'POST'])
 def upload_image():
+    pytesseract.pytesseract.tesseract_cmd = '/usr/bin/tesseract'
     if request.method == 'POST':
         image_file = request.files.get('image')
         print(image_file)
