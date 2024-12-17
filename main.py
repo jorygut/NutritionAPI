@@ -1997,10 +1997,7 @@ def upload_image():
         print('Ingredients:', ingredients)
         print('Nutritional Info:', nutritional_info)
         
-        return jsonify({
-            'ingredients': ingredients,
-            'nutritional_info': nutritional_info
-        })
+
     
 def parse_nutritional_values(text):
     patterns = {
