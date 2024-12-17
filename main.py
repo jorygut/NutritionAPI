@@ -1972,8 +1972,6 @@ def get_goals():
         user_data = get_user_from_token(token)
         return jsonify(dict(user_data._mapping))
 
-pytesseract.pytesseract.tesseract_cmd = '/usr/bin/tesseract' # Linux example, adjust if needed
-
 @app.route('/manageLabel', methods=['GET', 'POST'])
 def upload_image():
     if request.method == 'POST':
@@ -1985,9 +1983,11 @@ def upload_image():
         try:
             # Read the image file
             img = Image.open(image_file)
+            print(img)
 
             # Use OCR to extract text
             detected_text = pytesseract.image_to_string(img)
+            print(detected_text)
 
             # Parse nutritional values and ingredients from the text
             nutritional_info = parse_nutritional_values(detected_text)
