@@ -2000,7 +2000,7 @@ def upload_image():
         return jsonify({
             'ingredients': ingredients,
             'nutritional_info': nutritional_info
-        }), 200
+        })
         
 
 
