@@ -29,7 +29,7 @@ user_engine = create_engine(USER_DATABASE_URI)
 Session = sessionmaker(bind=user_engine)
 session = Session()
 
-reader = easyocr.Reader(['en'], gpu=False)
+reader = easyocr.Reader(['en'], gpu=True)
 
 @app.route('/food', methods=['GET'])
 def get_food_data():
