@@ -29,6 +29,8 @@ user_engine = create_engine(USER_DATABASE_URI)
 Session = sessionmaker(bind=user_engine)
 session = Session()
 
+reader = easyocr.Reader(['en'], gpu=False)
+
 @app.route('/food', methods=['GET'])
 def get_food_data():
     query = request.args.get('query')
@@ -2040,7 +2042,6 @@ def parse_ingredients(text):
     return None
 
 def perform_ocr(image_path):
-    reader = easyocr.Reader(['en'], gpu=True)
     result = reader.readtext(image_path)
     text = ' '.join([r[1] for r in result])
     return text
