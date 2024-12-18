@@ -1980,25 +1980,25 @@ def upload_image():
         print(image_file)
         if not image_file:
             return jsonify({'error': 'No image file provided.'}), 400
-
-
-        # Read the image file
-        img = Image.open(image_file)
-        print(img)
-
-        # Use OCR to extract text
-        detected_text = pytesseract.image_to_string(img)
-        print(detected_text)
-
-        # Parse nutritional values and ingredients from the text
-        nutritional_info = parse_nutritional_values(detected_text)
+    
+    detected_text = perform_ocr(image_file)
+    on_ing = False
+    ingredients = []
+    for d in detected_text.split(' '):
+        if on_ing:
+            ingredients.append(d)
+        score = fuzz.ratio(d, 'INGREDIENTS')
+        if score > 85:
+            on_ing = True
+        if on_ing and "." in d:
+            on_ing = False
+    print(ingredients)
+    if detected_text:
+        nutritional_values = parse_nutritional_values(detected_text)
         ingredients = parse_ingredients(detected_text)
 
-        # Print or return the extracted information
-        print('Ingredients:', ingredients)
-        print('Nutritional Info:', nutritional_info)
-        
-
+        print("Nutritional Values:", nutritional_values)
+        print("Ingredients:", ingredients)
     
 def parse_nutritional_values(text):
     patterns = {
@@ -2017,7 +2017,6 @@ def parse_nutritional_values(text):
         "calcium": r"calcium.*?(\d+mg)",
         "iron": r"iron.*?(\d+mg)",
         "potassium": r"potassium.*?(\d+mg)",
-
         "vitamin_a": r"vitamin a.*?(\d+%)",
         "vitamin_c": r"vitamin c.*?(\d+%)",
         "vitamin_b6": r"vitamin b6.*?(\d+%)",
@@ -2039,6 +2038,12 @@ def parse_ingredients(text):
         ingredients = match.group(1).strip()
         return ingredients
     return None
+
+def perform_ocr(image_path):
+    reader = easyocr.Reader(['en'])
+    result = reader.readtext(image_path)
+    text = ' '.join([r[1] for r in result])
+    return text
 
 #Compile
 if __name__ == '__main__':
