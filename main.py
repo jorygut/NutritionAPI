@@ -13,6 +13,7 @@ import pytesseract
 from PIL import Image
 import re
 import random
+import easyocr
 
 app = Flask(__name__)
 CORS(app)
@@ -1974,7 +1975,6 @@ def get_goals():
 
 @app.route('/manageLabel', methods=['GET', 'POST'])
 def upload_image():
-    pytesseract.pytesseract.tesseract_cmd = '/usr/bin/tesseract'
     if request.method == 'POST':
         image_file = request.files.get('image')
         print(image_file)
