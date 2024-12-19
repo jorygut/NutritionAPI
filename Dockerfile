@@ -1,15 +1,17 @@
-# Base image
-FROM python:3.9-slim
-
-# Set working directory
+# Build stage (installs dependencies)
+FROM python:3.9-slim AS builder
 WORKDIR /app
-
-# Copy requirements and install dependencies
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 
-# Copy the rest of the application
+# Final stage (slim image with application)
+FROM python:3.9-slim
+WORKDIR /app
+COPY --from=builder /app/ .
 COPY . .
 
-# Command to run the app
+# Expose port (if needed)
+EXPOSE 8000
+
+# Run command
 CMD ["python", "main.py"]
