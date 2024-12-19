@@ -1,0 +1,25 @@
+steps:
+- name: gcr.io/cloud-builders/docker
+  args:
+    [
+      "build",
+      "-t",
+      "gcr.io/nutritionapi-445206/nutritionapi:[TAG]",
+      ".",
+    ]
+  timeout: "2h"
+
+- name: gcr.io/cloud-builders/gcloud
+  args:
+    [
+      "gcloud",
+      "run",
+      "deploy",
+      "nutritionapi",
+      "--image",
+      "gcr.io/nutritionapi-445206/nutritionapi:[TAG]",
+      "--platform",
+      "managed",
+      "--region",
+      "us-central1",
+    ]
