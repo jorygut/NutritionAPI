@@ -29,8 +29,6 @@ user_engine = create_engine(USER_DATABASE_URI)
 Session = sessionmaker(bind=user_engine)
 session = Session()
 
-#reader = easyocr.Reader(['en'], gpu=True)
-
 @app.route('/food', methods=['GET'])
 def get_food_data():
     query = request.args.get('query')
@@ -52,6 +50,9 @@ def get_food_data():
 def search(query, length, username):
     search_column = 'Name'
 
+    # Replace spaces with '&' to construct a valid tsquery
+    formatted_query = ' & '.join(query.split())
+
     results = []
     seen_descriptions = set()
 
@@ -65,7 +66,7 @@ def search(query, length, username):
         ORDER BY "verified" ASC
         LIMIT {length}
         """)
-        result = connection.execute(query_text, {'query': query})
+        result = connection.execute(query_text, {'query': formatted_query})
         
         for row in result:
             name = row[0]
@@ -116,6 +117,7 @@ def search(query, length, username):
                     'verified': verified
                 })
     return results
+
 
 @app.route('/foodHistory', methods=['GET'])
 def get_food_data_history():
