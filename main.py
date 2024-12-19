@@ -1001,7 +1001,6 @@ def calculate_weight_change():
     except Exception as e:
         print(f'Failed: {e}')
         return {"error": "Failed to calculate weight change"}, 500
-
     
 @app.route('/updateHistory')
 def update_user_data():
@@ -1091,6 +1090,79 @@ def update_user_data():
     }
 
     return jsonify(response_data)
+
+@app.route('/getAverageWeeklyWeight', methods=['GET'])
+def get_average_weekly_weight():
+    try:
+        token = request.headers.get('Authorization')
+        if token:
+            token = token.split(" ")[1]
+            print(f'Fetched token: {token}')
+
+            user_data = get_user_from_token(token)
+            if not user_data:
+                return {"error": "Invalid token"}, 401
+            
+            user_id = user_data[1]
+
+            query = text("""SELECT weight, recorded_at, unit, index FROM user_weight
+                            WHERE username = :user_id
+                            ORDER BY recorded_at
+            """)
+
+            with user_engine.connect() as conn:
+                result = conn.execute(query, {'user_id': user_id})
+                data = result.fetchall()
+
+            response_data = [
+                {
+                    'weight': row[0],
+                    'recorded_at': row[1],
+                    'unit': row[2],
+                    'index': row[3]
+                }
+                for row in data
+            ]
+
+            weights = [d['weight'] for d in response_data]
+            dates = [d['recorded_at'] for d in response_data]
+
+            # Extract weights for the current week
+            current_week_weights = []
+            week_start_date = dates[-1]  # Assuming the latest date is the start of the current week
+            for weight, date in zip(weights, dates):
+                if date >= week_start_date - timedelta(days=7) and date <= week_start_date:
+                    current_week_weights.append(weight)
+
+            # Calculate the average weight for the current week
+            if current_week_weights:
+                average_weight_current_week = sum(current_week_weights) / len(current_week_weights)
+            else:
+                average_weight_current_week = None  # No weights available for the current week
+
+            # Extract weights for the previous week
+            previous_week_weights = []
+            for weight, date in zip(weights, dates):
+                if date >= week_start_date - timedelta(days=14) and date < week_start_date - timedelta(days=7):
+                    previous_week_weights.append(weight)
+
+            # Calculate the average weight for the previous week
+            if previous_week_weights:
+                average_weight_previous_week = sum(previous_week_weights) / len(previous_week_weights)
+            else:
+                average_weight_previous_week = None  # No weights available for the previous week
+
+            return {
+                "current_week_average_weight": average_weight_current_week,
+                "previous_week_average_weight": average_weight_previous_week
+            }, 200
+        else:
+            return {"error": "Authorization header missing"}, 400
+    except Exception as e:
+        print(f'Failed: {e}')
+        return {"error": "Failed to calculate average weekly weight"}, 500
+
+
 
 @app.route('/checkIngredients', methods=['POST'])
 def check_ingredients():
@@ -2055,4 +2127,4 @@ def perform_ocr(image_path):
 
 #Compile
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=8080)
