@@ -1,8 +1,15 @@
+# Base image
+FROM python:3.9-slim
+
+# Set working directory
 WORKDIR /app
 
-COPY requirements.txt /app/
+# Copy requirements and install dependencies
+COPY requirements.txt .
 RUN pip install -r requirements.txt
 
-COPY . /app
+# Copy the rest of the application
+COPY . .
 
+# Command to run the app
 CMD ["python", "main.py"]
