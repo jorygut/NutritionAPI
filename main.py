@@ -816,11 +816,15 @@ def remove_ingredient():
 
     return "Success"
     
+from datetime import datetime
+
 @app.route('/logWeight', methods=['POST', 'GET'])
 def log_weight():
     token = request.headers.get('Authorization')
     data = request.get_json()
     weight = data['weight']
+    recorded_at = data.get('recorded_at', datetime.now().strftime('%d-%m-%Y'))
+    
     if token:
         token = token.split(" ")[1]
         print(f'fetched token: {token}')
@@ -828,16 +832,17 @@ def log_weight():
         user_data = get_user_from_token(token)
         username = user_data[1]
 
-    log_query = text("""INSERT INTO user_weight (username, weight)
-                        VALUES (:username, :weight)""")
+    log_query = text("""INSERT INTO user_weight (username, weight, recorded_at)
+                        VALUES (:username, :weight, to_timestamp(:recorded_at, 'DD-MM-YYYY'))""")
     try:
         with user_engine.connect() as conn:
-            conn.execute(log_query, {'weight': weight, 'username': username})
+            conn.execute(log_query, {'weight': weight, 'username': username, 'recorded_at': recorded_at})
             conn.commit()
         return jsonify({'message': 'Weight logged successfully'}), 201
     except Exception as e:
         print('failed to log weight:', e)
         return jsonify({'error': 'Failed to log weight'}), 500
+
 @app.route('/retreiveWeight', methods=['GET'])
 def retreive_weight_data(): 
     try:
