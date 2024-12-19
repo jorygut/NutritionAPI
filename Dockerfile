@@ -1,5 +1,5 @@
 # Use an official Python runtime as a parent image
-FROM python:3.10-slim  # Updated to use Python 3.10
+FROM python:3.9-slim
 
 # Set the working directory in the container
 WORKDIR /app
@@ -8,7 +8,7 @@ WORKDIR /app
 COPY . .
 
 # Install the dependencies
-RUN pip install --no-cache-dir -r requirements.txt  # Added --no-cache-dir for better performance
+RUN pip install -r requirements.txt
 
 # Make port 8080 available to the world outside this container
 EXPOSE 8080
