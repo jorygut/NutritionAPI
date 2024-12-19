@@ -4,10 +4,10 @@ Flask-CORS
 SQLAlchemy
 Werkzeug
 ast
-sqlalchemy-stubs  # Optional but recommended for type hinting
-psycopg2-binary  # Required for connecting to a PostgreSQL database (adjust if you use a different database)
+sqlalchemy-stubs
+psycopg2-binary
 fuzzywuzzy
 pytesseract
-Pillow  # PIL fork
+Pillow
 regex
 easyocr
