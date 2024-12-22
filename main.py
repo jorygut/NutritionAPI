@@ -2053,6 +2053,7 @@ def get_goals():
 
 @app.route('/manageLabel', methods=['GET', 'POST'])
 def upload_image():
+    print('uploading')
     if request.method == 'POST':
         image_file = request.files.get('image')
         print(image_file)
@@ -2118,11 +2119,14 @@ def parse_ingredients(text):
     return None
 
 def perform_ocr(image_path):
-    reader = easyocr.Reader(['en'], gpu=False)
+    reader = easyocr.Reader(['en'], gpu=True)
     result = reader.readtext(image_path)
     text = ' '.join([r[1] for r in result])
     return text
 
+@app.route('/test', methods=['GET', 'POST'])
+def test():
+    print('test')
 #Compile
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8080)
+    app.run(debug=True)
