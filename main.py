@@ -866,7 +866,6 @@ def retreive_weight_data():
                 
                 print(f"Weight Results: {results}")
             
-            # Access each column by index
             weights = [{"weight": row[0], "date": row[1], "unit": row[2], "index": row[3]} for row in results]
 
             response_data = [
@@ -1161,8 +1160,6 @@ def get_average_weekly_weight():
     except Exception as e:
         print(f'Failed: {e}')
         return {"error": "Failed to calculate average weekly weight"}, 500
-
-
 
 @app.route('/checkIngredients', methods=['POST'])
 def check_ingredients():
@@ -2121,6 +2118,7 @@ def parse_ingredients(text):
     return None
 
 def perform_ocr(image_path):
+    reader = easyocr.Reader(['en'], gpu=False)
     result = reader.readtext(image_path)
     text = ' '.join([r[1] for r in result])
     return text
