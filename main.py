@@ -2059,7 +2059,7 @@ def upload_image():
         print(image_file)
         if not image_file:
             return jsonify({'error': 'No image file provided.'}), 400
-    
+    image_file = resize_image(image_file)
     detected_text = perform_ocr(image_file)
     on_ing = False
     ingredients = []
@@ -2123,10 +2123,25 @@ def perform_ocr(image_path):
     result = reader.readtext(image_path)
     text = ' '.join([r[1] for r in result])
     return text
+def resize_image(image_file):
+    image = Image.open(image_file)
+    image = image.resize((1024, 1024))
+    return image
 
-@app.route('/test', methods=['GET', 'POST'])
-def test():
-    print('test')
+@app.route('/getCoachWeight', methods=['GET', 'POST'])
+def get_coach_weight():
+    try:
+        auth = request.headers.get('Authorization')
+        if auth:
+            token = auth.split(' ')[1]
+            user_data = get_user_from_token(token)
+            print(user_data)
+        else:
+            return jsonify({"error": "Authorization header missing"}), 401
+    except Exception as e:
+        print(f"Error: {e}")
+        return jsonify({"error": "Internal server error"}), 500
+
 #Compile
 if __name__ == '__main__':
     app.run(debug=True)
