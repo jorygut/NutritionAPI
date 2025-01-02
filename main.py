@@ -50,6 +50,7 @@ def get_food_data():
 def search(query, length, username):
     search_column = 'Name'
 
+    # Replace spaces with '&' to construct a valid tsquery
     formatted_query = ' & '.join(query.split())
 
     results = []
@@ -171,6 +172,7 @@ def search_history(query, length):
             serving_multiplier = res[18]
             servings_value, serving_unit = selected_servings.split(' ')
 
+            # Calculate the new serving size
             serving_size = f'{float(servings_value) / float(serving_multiplier):.2f} {serving_unit}'
             if description not in seen_descriptions:
                 seen_descriptions.add(description)
@@ -333,12 +335,14 @@ def retrieve_recent_logs():
                 serving_multiplier = res[18]
                 
                 if selected_servings == 'null':
-                    serving_size = 1
+                    serving_size = 1  # Default serving size when selected_servings is 'null'
                 elif len(selected_servings.split(' ')) > 1:
+                    # More than one part means it contains a unit (e.g., "28 g")
                     parts = selected_servings.split(' ')
                     value = float(parts[0]) / float(serving_multiplier)
                     serving_size = f'{value} {parts[1]}'
                 else:
+                    # Only one part, meaning it is just a number (e.g., "28")
                     serving_size = float(selected_servings) / float(serving_multiplier)
 
                 if description not in seen_descriptions:
@@ -453,11 +457,13 @@ def create_profile():
                 """),
                 {'username': username, 'email': email, 'password': password}
             )
+            # Commit the transaction
             connection.commit()
         
         return jsonify({'message': 'Profile created successfully'}), 201
 
     except Exception as e:
+        # Rollback the transaction if there's an error
         connection.rollback()
         return jsonify({'error': str(e)}), 500
     
@@ -476,9 +482,11 @@ def login():
         user = result.fetchone()
 
     if user:
+        # Generate a new token
         token = str(uuid.uuid4())
         print(f"Generated token: {token}")
 
+        # Update the users table with the new token
         update_sql = text("UPDATE users SET token = :token WHERE username = :username")
         with user_engine.connect() as conn:
             update_result = conn.execute(update_sql, {'token': token, 'username': username})
@@ -509,6 +517,7 @@ def log_food():
         return jsonify({'error': 'Invalid date format'}), 400
     print(data['date'])
 
+    # Extract token from Authorization header
     authorization_header = request.headers.get('Authorization')
     if authorization_header:
         token = authorization_header.split()[1]
@@ -577,6 +586,7 @@ def retrieve_meals():
     if not date:
         return jsonify({'error': 'activateDate not provided'}), 400
     
+    # Validate and reformat the date
     try:
         reformatted_date = datetime.strptime(date, '%d-%m-%Y').strftime('%Y-%m-%d')
     except ValueError:
@@ -618,6 +628,7 @@ def remove_food():
     user_id = food['user_id']
 
     try:
+        # Perform the delete operation
         session.execute(
             text(""" DELETE FROM logged_food 
                      WHERE description = :description AND date = :log_date
@@ -673,6 +684,7 @@ def update_meals():
     user_data = get_user_from_token(token)
     user_id = user_data[1]
     
+    # Step 1: Retrieve the logged meals for the specific date and user
     get_meals_query = text("""
         SELECT id, meal 
         FROM logged_food 
@@ -683,10 +695,12 @@ def update_meals():
     with user_engine.connect() as conn:
         meals = conn.execute(get_meals_query, {'cur_date': formatted_date, 'user_id': user_id}).fetchall()
         
+        # Step 2: Reassign the meal numbers starting from 1
         for i, meal_record in enumerate(meals, start=1):
-            meal_id = meal_record[0]
+            meal_id = meal_record[0]  # 'id' is the first item in the tuple
             new_meal = f'Meal {i}'
             
+            # Step 3: Update the table with the new meal numbers
             update_meal_query = text("""
                 UPDATE logged_food 
                 SET meal = :new_meal 
@@ -759,6 +773,7 @@ def send_nutrient_goals():
             result = conn.execute(fetch_query, {'token': token}).fetchone()
 
             if result:
+                # Accessing result by index instead of column name
                 nutrient_goals = {
                     'goal_calories': result[0],
                     'goal_protein': result[1],
@@ -913,6 +928,7 @@ def remove_weight():
         
         user_id = user_data[1]
 
+        # Correct the SQL DELETE statement
         query = """DELETE FROM user_weight 
                    WHERE username = :user_id 
                    AND index = :index
@@ -1013,6 +1029,7 @@ def update_user_data():
         result = conn.execute(retrieve_query, {'user_id': user_data[1]})
         meals = result.fetchall()
         
+    # Manually map the rows to a dictionary
     meals_dicts = [
         {
             'user_id': row[0],
@@ -1054,6 +1071,7 @@ def update_user_data():
     avg_fat = total_fat / day_count
     avg_carbs = total_carbs / day_count
 
+    # Prepare the response data
     response_data = {
         'meals': meals_dicts,
         'totals': {
@@ -1108,26 +1126,30 @@ def get_average_weekly_weight():
             weights = [d['weight'] for d in response_data]
             dates = [d['recorded_at'] for d in response_data]
 
+            # Extract weights for the current week
             current_week_weights = []
-            week_start_date = dates[-1]
+            week_start_date = dates[-1]  # Assuming the latest date is the start of the current week
             for weight, date in zip(weights, dates):
                 if date >= week_start_date - timedelta(days=7) and date <= week_start_date:
                     current_week_weights.append(weight)
 
+            # Calculate the average weight for the current week
             if current_week_weights:
                 average_weight_current_week = sum(current_week_weights) / len(current_week_weights)
             else:
-                average_weight_current_week = None
+                average_weight_current_week = None  # No weights available for the current week
 
+            # Extract weights for the previous week
             previous_week_weights = []
             for weight, date in zip(weights, dates):
                 if date >= week_start_date - timedelta(days=14) and date < week_start_date - timedelta(days=7):
                     previous_week_weights.append(weight)
 
+            # Calculate the average weight for the previous week
             if previous_week_weights:
                 average_weight_previous_week = sum(previous_week_weights) / len(previous_week_weights)
             else:
-                average_weight_previous_week = None
+                average_weight_previous_week = None  # No weights available for the previous week
 
             return {
                 "current_week_average_weight": average_weight_current_week,
@@ -1200,9 +1222,11 @@ def reuseable_ingredient_check(username, ingredients):
 from datetime import datetime, timedelta
 
 def calculate_maintenance_calories(weights, calorie_intakes):
+    # Get today's date and the date 30 days ago
     today = datetime.today().date()
     past_month_date = today - timedelta(days=30)
     
+    # Filter dates to include only those within the past month
     valid_dates = [
         date for date in sorted(set(weights.keys()).union(set(calorie_intakes.keys())))
         if past_month_date <= date <= today and date in weights and date in calorie_intakes
@@ -1211,6 +1235,7 @@ def calculate_maintenance_calories(weights, calorie_intakes):
     if not valid_dates:
         raise ValueError("No overlapping dates between weights and calorie intakes within the past month.")
     
+    # Determine the start and end weights as averages over 7 days if there are more than 7 valid dates
     if len(valid_dates) > 7:
         start_weight = sum(weights[date] for date in valid_dates[:7]) / 7
         end_weight = sum(weights[date] for date in valid_dates[-7:]) / 7
@@ -1345,6 +1370,7 @@ def retrieve_user_stats():
             print(result)
         
         if result:
+            # Convert the SQL result to a dictionary
             user_stats = {
                 'goal_calories': result[0],
                 'goal_protein': result[1],
@@ -1355,7 +1381,7 @@ def retrieve_user_stats():
                 'activity_level': result[6],
                 'gender': result[7]
             }
-            return jsonify(user_stats)
+            return jsonify(user_stats)  # Return the JSON response
         else:
             return jsonify({'error': 'User not found'}), 404
     return jsonify({'error': 'Authorization token missing'}), 401
@@ -1363,18 +1389,21 @@ def retrieve_user_stats():
 def height_to_cm(feet, inches):
     return (feet * 30.48) + (inches * 2.54)
 
+# Convert weight from pounds to kilograms
 def weight_to_kg(weight_lbs):
     return weight_lbs * 0.453592
 
+# Calculate BMR for men or women
 def calculate_bmr(weight_kg, height_cm, age, gender):
-    age = int(age)
-    gender = gender.lower()
+    age = int(age)  # Convert age to an integer
+    gender = gender.lower()  # Convert gender to lowercase to avoid case sensitivity issues
     if gender == 'male':
         return 88.362 + (13.397 * weight_kg) + (4.799 * height_cm) - (5.677 * age)
     elif gender == 'female':
         return 447.593 + (9.247 * weight_kg) + (3.098 * height_cm) - (4.330 * age)
     return 0
 
+# Calculate maintenance calories
 def calculate_calories(bmr, activity_level):
     activity_multipliers = {
         'Sedentary': 1.2,
@@ -1400,7 +1429,7 @@ def calculate_calorie_needs():
     height_inches = int(data.get('heightInches', 0))
     weight_lbs = float(data.get('weight', 0))
     activity_level = data.get('activityLevel', 'Sedentary')
-    age = int(data['age'])  
+    age = int(data['age'])  # Convert age to an integer
     gender = data['gender'] 
 
     height_cm = height_to_cm(height_feet, height_inches)
@@ -1460,10 +1489,12 @@ def create_food():
 
     data = request.get_json()
 
+    # Replace empty strings with None (which translates to NULL in SQL)
     for key, value in data.items():
         if value == '':
             data[key] = 0
     
+    # Add the username and micronutrients fields to data
     data['username'] = username
     data['micronutrients'] = f"Iron: {data.get('iron', '')}, Calcium: {data.get('calcium', '')}, Vitamin D: {data.get('vitaminD', '')}, Potassium: {data.get('potassium', '')}"
 
@@ -1533,6 +1564,7 @@ def save_coach_settings():
     calorie_reminders = data['calorieReminders']
     progress_updates = data['progressUpdates']
     
+    # SQL query to update the user's settings
     query = text("""
         UPDATE users
         SET coach_enabled = :coach_enabled,
@@ -1545,6 +1577,7 @@ def save_coach_settings():
         WHERE username = :username
     """)
     
+    # Execute the query
     with user_engine.connect() as conn:
         conn.execute(query, {
             'coach_enabled': coach_enabled,
@@ -2026,7 +2059,7 @@ def upload_image():
         print(image_file)
         if not image_file:
             return jsonify({'error': 'No image file provided.'}), 400
-    
+    image_file = resize_image(image_file)
     detected_text = perform_ocr(image_file)
     on_ing = False
     ingredients = []
@@ -2090,10 +2123,25 @@ def perform_ocr(image_path):
     result = reader.readtext(image_path)
     text = ' '.join([r[1] for r in result])
     return text
+def resize_image(image_file):
+    image = Image.open(image_file)
+    image = image.resize((1024, 1024))
+    return image
 
-@app.route('/test', methods=['GET', 'POST'])
-def test():
-    print('test')
+@app.route('/getCoachWeight', methods=['GET', 'POST'])
+def get_coach_weight():
+    try:
+        auth = request.headers.get('Authorization')
+        if auth:
+            token = auth.split(' ')[1]
+            user_data = get_user_from_token(token)
+            print(user_data)
+        else:
+            return jsonify({"error": "Authorization header missing"}), 401
+    except Exception as e:
+        print(f"Error: {e}")
+        return jsonify({"error": "Internal server error"}), 500
+
 #Compile
 if __name__ == '__main__':
     app.run(debug=True)
