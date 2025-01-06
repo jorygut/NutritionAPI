@@ -14,17 +14,18 @@ from PIL import Image
 import re
 import random
 import easyocr
+import os
 
 app = Flask(__name__)
 CORS(app)
 # Declare Engine
-DATABASE_URI = 'postgresql://postgres:JIGpw69%@localhost:5433/yourdatabase'
+DATABASE_URI = os.getenv('DATABASE_URI')
 engine = create_engine(DATABASE_URI)
 #Declare Nutrition Engine
-NUTRITION_DATABASE_URI = 'postgresql://nutritiondb_owner:sG6LUrf4Haio@ep-aged-dust-a5ajc6ow.us-east-2.aws.neon.tech/nutritiondb?sslmode=require'
+NUTRITION_DATABASE_URI = os.getenv('NUTRITION_DATABASE_URI')
 nutrition_engine = create_engine(NUTRITION_DATABASE_URI)
 #Declare User Engine
-USER_DATABASE_URI = 'postgresql://neondb_owner:36tvODwzHdoQ@ep-solitary-thunder-a5xw9rsz.us-east-2.aws.neon.tech/neondb?sslmode=require'
+USER_DATABASE_URI = os.getenv('USER_DATABASE_URI')
 user_engine = create_engine(USER_DATABASE_URI)
 Session = sessionmaker(bind=user_engine)
 session = Session()
@@ -50,7 +51,6 @@ def get_food_data():
 def search(query, length, username):
     search_column = 'Name'
 
-    # Replace spaces with '&' to construct a valid tsquery
     formatted_query = ' & '.join(query.split())
 
     results = []
