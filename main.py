@@ -1320,6 +1320,7 @@ def calc_current_weight():
         token = auth.split(" ")[1]
         user_data = get_user_from_token(token)
         username = user_data[1]
+        
         query = text("""
             SELECT weight, recorded_at, unit
             FROM user_weight
@@ -1335,6 +1336,7 @@ def calc_current_weight():
             AND recorded_at < CURRENT_TIMESTAMP - INTERVAL '7 days'
             ORDER BY recorded_at DESC
         """)
+        
         with user_engine.connect() as conn:
             results = conn.execute(query, {'username': username})
             results_prev = conn.execute(previous_week_query, {'username': username})
@@ -1344,15 +1346,21 @@ def calc_current_weight():
             for result in results:
                 total_weight_cur += result[0]
                 weight_count_cur += 1
-            avg_weight = total_weight_cur / weight_count_cur
-
+            
+            avg_weight = total_weight_cur / weight_count_cur if weight_count_cur > 0 else 0
+            
             total_weight_prev = 0
             weight_count_prev = 0
             for result in results_prev:
                 total_weight_prev += result[0]
                 weight_count_prev += 1
-            avg_weight_prev = total_weight_prev / weight_count_prev
-    return jsonify(avg_weight, avg_weight_prev)
+            
+            avg_weight_prev = total_weight_prev / weight_count_prev if weight_count_prev > 0 else 0
+
+        return jsonify({"avg_weight": avg_weight, "avg_weight_prev": avg_weight_prev})
+    else:
+        return jsonify({"error": "Unauthorized"}), 401
+
 @app.route('/getStats', methods=['GET'])
 def retrieve_user_stats():
     auth = request.headers.get('Authorization')
@@ -1370,7 +1378,6 @@ def retrieve_user_stats():
             print(result)
         
         if result:
-            # Convert the SQL result to a dictionary
             user_stats = {
                 'goal_calories': result[0],
                 'goal_protein': result[1],
@@ -1381,7 +1388,7 @@ def retrieve_user_stats():
                 'activity_level': result[6],
                 'gender': result[7]
             }
-            return jsonify(user_stats)  # Return the JSON response
+            return jsonify(user_stats)
         else:
             return jsonify({'error': 'User not found'}), 404
     return jsonify({'error': 'Authorization token missing'}), 401
@@ -1389,21 +1396,18 @@ def retrieve_user_stats():
 def height_to_cm(feet, inches):
     return (feet * 30.48) + (inches * 2.54)
 
-# Convert weight from pounds to kilograms
 def weight_to_kg(weight_lbs):
     return weight_lbs * 0.453592
 
-# Calculate BMR for men or women
 def calculate_bmr(weight_kg, height_cm, age, gender):
-    age = int(age)  # Convert age to an integer
-    gender = gender.lower()  # Convert gender to lowercase to avoid case sensitivity issues
+    age = int(age)
+    gender = gender.lower()
     if gender == 'male':
         return 88.362 + (13.397 * weight_kg) + (4.799 * height_cm) - (5.677 * age)
     elif gender == 'female':
         return 447.593 + (9.247 * weight_kg) + (3.098 * height_cm) - (4.330 * age)
     return 0
 
-# Calculate maintenance calories
 def calculate_calories(bmr, activity_level):
     activity_multipliers = {
         'Sedentary': 1.2,
@@ -1429,7 +1433,7 @@ def calculate_calorie_needs():
     height_inches = int(data.get('heightInches', 0))
     weight_lbs = float(data.get('weight', 0))
     activity_level = data.get('activityLevel', 'Sedentary')
-    age = int(data['age'])  # Convert age to an integer
+    age = int(data['age'])
     gender = data['gender'] 
 
     height_cm = height_to_cm(height_feet, height_inches)
