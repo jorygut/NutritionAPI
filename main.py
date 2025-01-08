@@ -2062,6 +2062,9 @@ def upload_image():
 
         print("Nutritional Values:", nutritional_values)
         print("Ingredients:", ingredients)
+        return nutritional_values, ingredients
+    else:
+        return {}, {}
 # Parse nutritional values from image
 def parse_nutritional_values(text):
     patterns = {
